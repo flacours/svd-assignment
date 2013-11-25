@@ -79,11 +79,28 @@ public class SVDModelBuilder implements Provider<SVDModel> {
         // All the work is done in the constructor
         SingularValueDecomposition svd = new SingularValueDecomposition(matrix);
 
+        RealMatrix weights = createWeightsMatrix(svd);
+        RealMatrix umat=svd.getU();
+        RealMatrix imat=svd.getV();
+
+        // TODO how do we truncate ?
+
         // Third, truncate the decomposed matrix
         // TODO Truncate the matrices and construct the SVD model
 
-        // TODO Replace this throw line with returning the model when you are finished
-        throw new UnsupportedOperationException("SVD model not yet implemented");
+
+        SVDModel model ;
+        model = new SVDModel(userMapping, itemMapping, umat, imat, weights);
+        return model;
+    }
+
+    private RealMatrix createWeightsMatrix(SingularValueDecomposition svd) {
+        RealMatrix matrix = MatrixUtils.createRealMatrix(featureCount,featureCount);
+        double[] singularValues = svd.getSingularValues();
+        for(int i = 0; i < featureCount; i++) {
+            matrix.setEntry(i,i, singularValues[i]);
+        }
+        return  matrix;
     }
 
     /**
@@ -111,7 +128,16 @@ public class SVDModelBuilder implements Provider<SVDModel> {
                 MutableSparseVector ratings = Ratings.userRatingVector(user.filter(Rating.class));
                 MutableSparseVector baselines = MutableSparseVector.create(ratings.keySet());
                 baselineScorer.score(user.getUserId(), baselines);
-                // TODO Populate this user's row with their ratings, minus the baseline scores
+
+                // substract baseline score mean
+                ratings.subtract(baselines);
+
+                // Populate this user's row with their ratings, minus the baseline scores
+                for(VectorEntry entry : ratings.fast()){
+                    // get the col number for this rating
+                    int v = itemMapping.getIndex(entry.getKey());
+                    matrix.setEntry(u,v,entry.getValue());
+                }
             }
         } finally {
             users.close();
