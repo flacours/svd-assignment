@@ -1,0 +1,10 @@
+
+C:\Users\lacoursf.TIBURONINC\Documents\GitHub\svd-assignment>target/bin/run-svd 1024:77 1024:268 1024:462 1024:393 1024:36955 2048:77 2048:36955 2048:788 
+2048,788,4.1358,Mrs. Doubtfire (1993)
+2048,36955,4.0373,True Lies (1994)
+2048,77,3.8746,Memento (2000)
+1024,462,3.8826,Erin Brockovich (2000)
+1024,393,3.6839,Kill Bill: Vol. 2 (2004)
+1024,36955,3.2596,True Lies (1994)
+1024,77,4.0733,Memento (2000)
+1024,268,3.1743,Batman (1989)

@@ -1,0 +1,1 @@
+mvn lenskit-eval -Dlenskit.eval.threadCount=1

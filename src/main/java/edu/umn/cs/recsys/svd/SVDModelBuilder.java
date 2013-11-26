@@ -1,5 +1,6 @@
 package edu.umn.cs.recsys.svd;
 
+import javafx.beans.property.ReadOnlyMapProperty;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
@@ -80,27 +81,29 @@ public class SVDModelBuilder implements Provider<SVDModel> {
         SingularValueDecomposition svd = new SingularValueDecomposition(matrix);
 
         RealMatrix weights = createWeightsMatrix(svd);
-        RealMatrix umat=svd.getU();
-        RealMatrix imat=svd.getV();
-
-        // TODO how do we truncate ?
-
-        // Third, truncate the decomposed matrix
-        // TODO Truncate the matrices and construct the SVD model
-
+        RealMatrix umat= createUserMatrix(svd);
+        RealMatrix imat=createItemMatrix(svd);
 
         SVDModel model ;
         model = new SVDModel(userMapping, itemMapping, umat, imat, weights);
         return model;
     }
 
+    private RealMatrix createUserMatrix(SingularValueDecomposition svd) {
+        RealMatrix u = svd.getU();
+        RealMatrix uTruncated = u.getSubMatrix(0,u.getRowDimension()-1,0,featureCount-1);
+        return  uTruncated;
+    }
+
+    private RealMatrix createItemMatrix(SingularValueDecomposition svd) {
+        RealMatrix v = svd.getV();
+        RealMatrix vTruncated = v.getSubMatrix(0,v.getRowDimension()-1,0,featureCount-1);
+        return  vTruncated;
+    }
+
     private RealMatrix createWeightsMatrix(SingularValueDecomposition svd) {
-        RealMatrix matrix = MatrixUtils.createRealMatrix(featureCount,featureCount);
-        double[] singularValues = svd.getSingularValues();
-        for(int i = 0; i < featureCount; i++) {
-            matrix.setEntry(i,i, singularValues[i]);
-        }
-        return  matrix;
+        RealMatrix s = svd.getS();
+        return s.getSubMatrix(0,featureCount-1,0,featureCount-1);
     }
 
     /**
