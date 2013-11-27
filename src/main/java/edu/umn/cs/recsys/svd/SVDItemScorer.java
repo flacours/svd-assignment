@@ -64,6 +64,11 @@ public class SVDItemScorer extends AbstractItemScorer {
 
             RealMatrix itemVector = model.getItemVector(item);
             RealMatrix w = model.getFeatureWeights();
+            if(userVector == null){
+                //logger.info("User vector is null");
+                continue;
+            }
+            if(w == null)logger.info("w vector is null");
             RealMatrix temp= userVector.multiply(w);
             RealMatrix scoreMat = temp.multiply(itemVector.transpose());
 
