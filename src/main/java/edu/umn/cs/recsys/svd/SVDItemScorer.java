@@ -55,26 +55,32 @@ public class SVDItemScorer extends AbstractItemScorer {
         // TODO Score the items in the key domain of scores
 
         RealMatrix userVector = model.getUserVector(user);
+        if(userVector == null)
+        {
+          scores.clear();
+        }
+        else
+        {
+            SparseVector userRatingVector = getUserRatingVector(user);
+            for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
+                long item = e.getKey();
+                // TODO Set the scores
+                double b = baselineScorer.score(user, item);
 
-        SparseVector userRatingVector = getUserRatingVector(user);
-        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
-            long item = e.getKey();
-            // TODO Set the scores
-            double b = baselineScorer.score(user, item);
+                RealMatrix itemVector = model.getItemVector(item);
+                RealMatrix w = model.getFeatureWeights();
+                if(userVector == null){
+                    //logger.info("User vector is null");
+                    continue;
+                }
+                if(w == null)logger.info("w vector is null");
+                RealMatrix temp= userVector.multiply(w);
+                RealMatrix scoreMat = temp.multiply(itemVector.transpose());
 
-            RealMatrix itemVector = model.getItemVector(item);
-            RealMatrix w = model.getFeatureWeights();
-            if(userVector == null){
-                //logger.info("User vector is null");
-                continue;
+                double score = scoreMat.getEntry(0,0) + b;
+                //logger.info(String.format("Score of %d = %f+%f = %f", item, b, scoreMat.getEntry(0,0), score));
+                scores.set(item, score);
             }
-            if(w == null)logger.info("w vector is null");
-            RealMatrix temp= userVector.multiply(w);
-            RealMatrix scoreMat = temp.multiply(itemVector.transpose());
-
-            double score = scoreMat.getEntry(0,0) + b;
-            //logger.info(String.format("Score of %d = %f+%f = %f", item, b, scoreMat.getEntry(0,0), score));
-            scores.set(item, score);
         }
     }
 
